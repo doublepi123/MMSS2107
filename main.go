@@ -1,26 +1,34 @@
 package main
 
 import (
+	"MMSS2107/LRUCache"
 	"MMSS2107/entity"
+	"MMSS2107/service"
 	"MMSS2107/util"
-	"container/heap"
-	"github.com/doublepi123/cachemap/priorityqueue"
+	"time"
 )
 
 func main() {
-	//数据库初始化
 	db := util.Database{}
+	//连接数据库并初始化
 	db.Connect()
 	db.DB.AutoMigrate(entity.Paper{})
 	db.DB.AutoMigrate(entity.Journal{})
 	db.DB.AutoMigrate(entity.Teacher{})
-	pq := make(priorityqueue.PQueue,10)
-	heap.Init(&pq)
-	it := priorityqueue.Item{
-		10,
-		"abc",
+	db.DB.AutoMigrate(entity.User{})
+	db.DB.AutoMigrate(entity.Userid{})
+	//初始化LRU缓存
+	lru := LRUCache.LRU{Maxsize: 1000}
+	lru.Init()
+	//初始化服务
+	sv := service.Service{
+		DB:  db,
+		LRU: lru,
 	}
-	heap.Push(&pq,it)
-	s := heap.Pop(&pq)
-	print(s.(priorityqueue.Item).Value.(string))
+	//启动服务
+	sv.Run()
+	//保持主程序不退出
+	for {
+		time.Sleep(time.Hour)
+	}
 }
